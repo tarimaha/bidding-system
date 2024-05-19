@@ -1,0 +1,33 @@
+.rating {
+    direction: rtl;
+    unicode-bidi: bidi-override;
+    text-align: center;
+}
+
+.rating > input {
+    display: none;
+}
+
+.rating > label {
+    display: inline-block;
+    position: relative;
+    width: 1em;
+    font-size: 3rem;
+    color: #FFD700;
+    cursor: pointer;
+}
+
+.rating > label::before {
+    content: "☆";
+    position: absolute;
+    opacity: 0;
+}
+
+.rating > label:hover:before,
+.rating > label:hover ~ label:before {
+    opacity: 1 !important;
+}
+
+.rating > input:checked ~ label:before {
+    opacity: 1;
+}

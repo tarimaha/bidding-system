@@ -25,4 +25,10 @@ urlpatterns = [
     path("addListing", views.addListing, name="add_listing"),
     path("user_listings", views.user_listings, name="user_listings"),
     path("close_listing/<int:listing_id>", views.close_listing, name="close_listing"),
+    #path('upload-profile-picture/', views.upload_profile_picture, name='upload_profile_picture'),
+    path('profile/', views.profile_view, name='profile_view'),
+    #path('create-profile/', views.create_profile, name='create_profile'),
+    path('rate-seller/<str:seller_username>/<int:rating>/', views.rate_seller, name='rate_seller'),
+    path('profile/create/', views.create_profile, name='create_profile'),
+    path('profile/edit/', views.edit_profile, name='edit_profile')
 ]  

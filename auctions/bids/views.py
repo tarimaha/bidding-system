@@ -4,11 +4,12 @@ from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render, redirect
 from django.urls import reverse
 from django.contrib import messages
+from django.core.mail import send_mail
 
 from decimal import *
 
-from .models import User, Listing, Bid, Comment
-from .forms import ListingForm
+from .models import User, Listing, Bid, Comment, UserProfile
+from .forms import ListingForm, ProfilePictureForm, UserProfileForm
 
 from .decorators import Unauthenticated_user, Authenticated_user
 
@@ -118,6 +119,8 @@ def listing(request, listing):
     }
     return render(request, "auctions/listing.html", context)
 
+
+
 @Authenticated_user
 def bid(request):
     if request.method == "POST":
@@ -132,6 +135,13 @@ def bid(request):
             bid.save()
             messages.success(request, 'Bid Placed Successfully!', fail_silently=True)
         elif Decimal(new_bid) < old_bid[0].highest_bid:
+            # Notify the user via email if their bid is outbid
+            subject = 'Outbid Notification'
+            message = f'Your bid on the listing "{item.name}" has been outbid!'
+            from_email = 'your_email@gmail.com'
+            to_email = [request.user.email]
+            send_mail(subject, message, from_email, to_email, fail_silently=True)
+
             messages.warning(request, 'The bid you placed was lower than needed.', fail_silently=True)
         elif Decimal(new_bid) == old_bid[0].highest_bid:
             messages.warning(request, 'The bid you placed was the same as the current bid', fail_silently=True)
@@ -142,6 +152,7 @@ def bid(request):
             old_bid.save()
             messages.success(request, 'Bid Placed Successfully!', fail_silently=True)
     return redirect("bids:listing", item_id)
+
 
 @Authenticated_user
 def comment(request):
@@ -271,4 +282,82 @@ def close_listing(request, listing_id):
         messages.success(request, 'Listing successfully closed.', fail_silently=True)
     else:
         messages.warning(request, 'Unable to close listing! Authentication error.', fail_silently=True)
+
     return redirect("bids:user_listings")
+
+
+
+
+@Authenticated_user
+def rate_seller(request, seller_username, rating):
+    if request.method == "POST":
+        # Calculate new seller rating and update UserProfile
+        seller_profile = UserProfile.objects.get(user__username=seller_username)
+        seller_profile.seller_rating = (seller_profile.seller_rating + rating) / 2
+        seller_profile.save()
+        return redirect("bids:index")
+    else:
+        return render(request, "auctions/rate_seller.html")
+
+@Authenticated_user
+def create_profile(request):
+    if request.method == "POST":
+        profile_form = UserProfileForm(request.POST)
+        
+        if profile_form.is_valid():
+            profile = profile_form.save(commit=False)
+            profile.user = request.user
+            
+            profile.save()
+            return redirect('profile_view')
+    else:
+        profile_form = UserProfileForm()
+        
+
+    context = {
+        'profile_form': profile_form,
+        
+    }
+    return render(request, 'auctions/create_profile.html', context)
+
+
+
+
+@Authenticated_user
+def profile_view(request):
+    try:
+        user_profile = UserProfile.objects.get(user=request.user)
+        is_complete = bool(user_profile.address and user_profile.phone_number)
+        context = {
+        'user_profile': user_profile,
+        'is_complete': is_complete,
+    }
+        if not user_profile.is_complete:
+            return redirect('auctions/create_profile')
+        return render(request, 'auctions/profile.html', {'user_profile': user_profile})
+    except UserProfile.DoesNotExist:
+        return redirect('auctions/create_profile')  
+
+    
+
+
+
+@Authenticated_user
+def edit_profile(request):
+    try:
+        user_profile = UserProfile.objects.get(user=request.user)
+    except UserProfile.DoesNotExist:
+        return redirect('bids:create_profile')
+
+    if request.method == "POST":
+        form = UserProfileForm(request.POST, request.FILES, instance=user_profile)
+        if form.is_valid():
+            form.save()
+            return redirect('bids:profile_view')
+    else:
+        form = UserProfileForm(instance=user_profile)
+
+    context = {
+        'form': form,
+    }
+    return render(request, 'auctions/edit_profile.html', context)

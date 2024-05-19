@@ -1,0 +1,27 @@
+<!-- edit_profile.html -->
+{% extends "auctions/layout.html" %}
+
+
+{% block body %}
+    <h2>Edit Your Profile</h2>
+    <form method="post">
+        {% csrf_token %}
+        <label for="address">Address:</label><br>
+        <input type="text" id="address" name="address" required><br><br>
+        
+        <label for="phone_number">Phone Number:</label><br>
+        <input type="text" id="phone_number" name="phone_number" required><br><br>
+
+        <label for="payment_method">Payment Method:</label><br>
+        <input type="text" id="payment_method" name="payment_method" required><br><br>
+
+        <label for="payment_card_number">Payment Card Number:</label><br>
+        <input type="text" id="payment_card_number" name="payment_card_number" required><br><br>
+
+        <label for="payment_expiry_date">Payment Expiry Date:</label><br>
+        <input type="text" id="payment_expiry_date" name="payment_expiry_date" required><br><br>
+
+        <button type="submit">Submit</button>
+    </form>
+   
+{% endblock %}

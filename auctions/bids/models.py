@@ -3,11 +3,31 @@ from django.db import models
 from django.contrib.auth import get_user_model
 
 
-"""
-class User(AbstractUser):
-    pass
-"""
+
+
 User = get_user_model()
+
+class UserProfile(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    # Additional profile fields
+    address = models.CharField(max_length=255, blank=True)
+    phone_number = models.CharField(max_length=20, blank=True)
+    # Payment details
+    payment_method = models.CharField(max_length=50, blank=True)
+    payment_card_number = models.CharField(max_length=16, blank=True)
+    payment_expiry_date = models.DateField(blank=True, null=True)
+    # Add more payment-related fields as needed
+
+    seller_rating = models.DecimalField(max_digits=3, decimal_places=1, default=0.0)
+    profile_picture = models.ImageField(upload_to='profile_pictures/', blank=True, null=True)
+
+
+
+    def __str__(self):
+        return f"{self.user.username}'s Profile"
+
+    def is_complete(self):
+        return bool(self.address and self.phone_number and self.profile_picture)
 
 class Listing(models.Model):
     CATEGORIES = [
@@ -17,6 +37,7 @@ class Listing(models.Model):
         ('Decoration', 'Decoration'),
         ('Electronics', 'Electronics'),
         ('Valuables', 'Valuables'),
+        ('Valuables', 'vehicle'),
         ('Other', 'Other'),
     ]
     STATUS = [
