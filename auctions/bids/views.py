@@ -8,7 +8,8 @@ from django.core.mail import send_mail
 
 from decimal import *
 
-from .models import User, Listing, Bid, Comment, UserProfile
+from django.conf import settings
+from .models import User, Listing, Bid, Comment, UserProfile, WatchList
 from .forms import ListingForm, ProfilePictureForm, UserProfileForm
 
 from .decorators import Unauthenticated_user, Authenticated_user
@@ -122,36 +123,30 @@ def listing(request, listing):
 
 
 @Authenticated_user
-def bid(request):
-    if request.method == "POST":
-        new_bid = request.POST["bid"]
-        item_id = request.POST["list_id"]
+def bid(request, listing_id):
+    listing = Listing.objects.get(pk=listing_id)
+    current_bid = float(request.POST['bid'])
+    user = request.user
 
-        item = Listing.objects.get(pk=item_id)
-        old_bid = Bid.objects.filter(listing=item)
+    # Assuming you have a form to handle the bid amount
+    if current_bid > listing.initial:
+        new_bid = Bid(listing=listing, user=user, highest_bid=current_bid)
+        new_bid.save()
 
-        if old_bid.count() < 1:
-            bid = Bid(user=request.user, listing=item, highest_bid=new_bid)
-            bid.save()
-            messages.success(request, 'Bid Placed Successfully!', fail_silently=True)
-        elif Decimal(new_bid) < old_bid[0].highest_bid:
-            # Notify the user via email if their bid is outbid
-            subject = 'Outbid Notification'
-            message = f'Your bid on the listing "{item.name}" has been outbid!'
-            from_email = 'your_email@gmail.com'
-            to_email = [request.user.email]
-            send_mail(subject, message, from_email, to_email, fail_silently=True)
+        # Notify users watching this item
+        notify_watchers(listing, user)
 
-            messages.warning(request, 'The bid you placed was lower than needed.', fail_silently=True)
-        elif Decimal(new_bid) == old_bid[0].highest_bid:
-            messages.warning(request, 'The bid you placed was the same as the current bid', fail_silently=True)
-        else:
-            old_bid = Bid.objects.get(listing=item)
-            old_bid.highest_bid = new_bid
-            old_bid.user = request.user
-            old_bid.save()
-            messages.success(request, 'Bid Placed Successfully!', fail_silently=True)
-    return redirect("bids:listing", item_id)
+        return redirect('listing', listing_id=listing.id)
+
+def notify_watchers(listing, new_bidder):
+    for watcher in WatchList.objects.filter(listing=listing).exclude(user=new_bidder):
+        send_mail(
+            'New bid on item you are watching',
+            f'There is a new bid on the item {listing.title}. Check it out!',
+            settings.DEFAULT_FROM_EMAIL,
+            [watcher.user.email],
+            fail_silently=False,
+        )
 
 
 @Authenticated_user
@@ -167,22 +162,25 @@ def comment(request):
 
 @Authenticated_user
 def watchlist(request):
-    if request.user not in watch_list or watch_list[request.user] == []:
+    watch_list = WatchList.objects.filter(user=request.user)
+    if not watch_list:
         context = {
             'message': "Nothing in your watchlist",
         }
         return render(request, "auctions/watchlist.html", context)
+
     listings = []
-    for item_id in watch_list[request.user]:
-        item = Listing.objects.get(pk=item_id)
+    for watch in watch_list:
+        item = watch.listing
         try:
             bid = Bid.objects.get(listing=item)
-        except:
+        except Bid.DoesNotExist:
             bid = None
         listings.append({
             'listing': item,
             'bid': bid,
         })
+
     context = {
         'listings': listings,
     }

@@ -85,3 +85,7 @@ class Comment(models.Model):
 
     def __str__(self):
         return f"{self.comment} - by {self.user}"
+
+class WatchList(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    listing = models.ForeignKey(Listing, on_delete=models.CASCADE)
