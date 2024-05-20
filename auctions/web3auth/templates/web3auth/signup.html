@@ -1,19 +1,39 @@
-{% load static %}
-<!doctype html>
-<html lang="en">
-  <head>
-    <meta charset="utf-8">
-  </head>
-  <body>
-    <form action="" method="POST">
-      {% csrf_token %}
-      {{ form.as_p }}
-      <button type="submit">Sign Up</button>
 
-    </form>
+{% extends "auctions/layout.html" %}
+{% load static %}
+{% block body %}
+
+    <div class="d-flex flex-column justify-content-center align-items-center">
+        <h2 class="blue-text">Register</h2>
+
+        {% if message %}
+            <div class="alert alert-danger">{{ message }}</div> 
+        {% endif %}
+        
+    </div>
+    <div class="register-form login-form">
+    <form action="" method="POST">
+        {% csrf_token %}
+        <div class="form-group">
+            <input class="form-control" autofocus type="text" name="username" placeholder="Username">
+        </div>
+        <div class="form-group">
+            <input class="form-control" autofocus type="email" name="email" placeholder="Email">
+        </div>
+        
+
+        <button type="submit" class="btn btn-primary">Sign Up</button>
+  
+      </form>
+    </div>
+    <div class="center-text">
+      Already have an account? <a href="{% url 'bids:login' %}">Login here.</a>
+    </div>
+  
+   
 
    
-  </body>
+
 
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
 
@@ -170,5 +190,6 @@ function web3Login(login_url, onTokenRequestFail, onTokenSignFail, onTokenSignSu
 }
 
  </script> 
+ {% endblock %}
 
 </html>

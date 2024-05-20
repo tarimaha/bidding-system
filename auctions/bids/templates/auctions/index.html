@@ -24,10 +24,10 @@
   {% endif %}
 
   {% if listings %}
-  <ul class="listings d-flex">
+  <ul class="listings d-flex flex-wrap justify-content-center">
     {% for list in listings %}
-    <li>
-      <div class="card flex-col-6">
+    <li class="col-4">
+      <div class="card">
         <div class="card-header">
           {{ list.listing.name }}
           {% if list.listing.user == user %}

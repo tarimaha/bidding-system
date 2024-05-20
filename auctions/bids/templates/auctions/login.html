@@ -2,12 +2,14 @@
 
 {% block body %}
 
-    <h2 class="blue-text">Login</h2>
+    <div class="d-flex flex-column justify-content-center align-items-center">
+        <h2 class="blue-text">Login</h2>
 
-    {% if message %}
-        <div class="alert alert-danger">{{ message }}</div>
-    {% endif %}
-    <button onclick="startLogin()" type=submit>Login using Metamask</button>
+        {% if message %}
+            <div class="alert alert-danger">{{ message }}</div> 
+        {% endif %}
+        <button onclick="startLogin()" type=submit class="btn btn-primary">Login using Metamask</button>
+    </div>
     <div class="center-text">
       Don't have an account? <a href="{% url 'web3auth:web3auth_signup' %}">Register here.</a>
     </div>
