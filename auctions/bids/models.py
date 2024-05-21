@@ -88,4 +88,6 @@ class Comment(models.Model):
 
 class WatchList(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
-    listing = models.ForeignKey(Listing, on_delete=models.CASCADE)
+    listing = models.ForeignKey(Listing, on_delete=models.CASCADE, default=None)
+    created_at = models.DateTimeField(auto_now_add=True)
+

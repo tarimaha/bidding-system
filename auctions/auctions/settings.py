@@ -7,6 +7,10 @@ import environ
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 
+
+
+
+
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.0/howto/deployment/checklist/
 
@@ -16,7 +20,7 @@ SECRET_KEY = 'django-insecure-2hmocd!^6+csg63kwsb4o%^qxacsxs#rbj@$_iyo9$3m-2tgog
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-#ALLOWED_HOSTS = ['127.0.0.1', 'localhost', '192.168.0.106']
+ALLOWED_HOSTS = ['127.0.0.1', 'localhost', '0.0.0.0']
 
 
 
@@ -41,6 +45,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    #'auctions.middleware.RemovePortMiddleware',
 ]
 
 ROOT_URLCONF = 'auctions.urls'
@@ -113,12 +118,8 @@ USE_TZ = True
 
 
 
-# Initialise environment variables
-env = environ.Env()
-environ.Env.read_env()
 
-ALLOWED_HOSTS = env.list('ALLOWED_HOSTS')
-DEBUG = env.bool('DEBUG', default=False)
+
 
 
 

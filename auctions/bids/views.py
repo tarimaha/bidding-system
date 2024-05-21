@@ -1,7 +1,7 @@
 from django.contrib.auth import authenticate, login, logout
 from django.db import IntegrityError
 from django.http import HttpResponse, HttpResponseRedirect
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect,  get_object_or_404
 from django.urls import reverse
 from django.contrib import messages
 from django.core.mail import send_mail
@@ -162,8 +162,9 @@ def comment(request):
 
 @Authenticated_user
 def watchlist(request):
+
     watch_list = WatchList.objects.filter(user=request.user)
-    if not watch_list:
+    if not watch_list.exists():
         context = {
             'message': "Nothing in your watchlist",
         }
@@ -188,26 +189,30 @@ def watchlist(request):
 
 @Authenticated_user
 def add_to_watchlist(request, item_id):
-    if request.user not in watch_list:
-        watch_list[request.user] = []
-        watch_list[request.user].append(item_id)
+    listing = get_object_or_404(Listing, id=item_id)
+    watch_list, created = WatchList.objects.get_or_create(user=request.user, listing=listing)
+    if created:
         messages.success(request, 'Successfully added item to your WatchList.', fail_silently=True)
-    elif item_id in watch_list[request.user]:
-        messages.warning(request, 'Item already present in your WatchList.', fail_silently=True)
     else:
-        watch_list[request.user].append(item_id)
-        messages.success(request, 'Successfully added item to your WatchList.', fail_silently=True)
+        messages.warning(request, 'Item already present in your WatchList.', fail_silently=True)
     return redirect("bids:index")
 
 @Authenticated_user
-def remove_from(request, item_id):
-    if request.user not in watch_list:
-        messages.warning(request, 'Cannot remove from empty WatchList.', fail_silently=True)
-    elif item_id in watch_list[request.user]:
-        watch_list[request.user].remove(item_id)
-        messages.success(request, 'Successfully removed item from your WatchList.', fail_silently=True)
+def remove_from_watchlist(request, item_id):
+    # Fetch the user's watchlist
+    watch_list = WatchList.objects.filter(user=request.user).first()
+    
+    if watch_list:
+        # Check if the item exists in the watchlist
+        if watch_list.items.filter(id=item_id).exists():
+            # Remove the item from the watchlist
+            watch_list.items.remove(item_id)
+            messages.success(request, 'Successfully removed item from your WatchList.', fail_silently=True)
+        else:
+            messages.warning(request, 'Item not in your WatchList.', fail_silently=True)
     else:
-        messages.warning(request, 'Item not in your WatchList.', fail_silently=True)
+        messages.warning(request, 'No WatchList found for the user.', fail_silently=True)
+
     return redirect("bids:index")
 
 def categories(request):

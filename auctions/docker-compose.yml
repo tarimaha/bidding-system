@@ -13,5 +13,5 @@ services:
       - "8000:8000"
     environment:
       - DEBUG=1
-      - SECRET_KEY=your-secret-key
-      - ALLOWED_HOSTS=localhost 127.0.0.1 0.0.0.0
+      - SECRET_KEY=django-insecure-2hmocd!^6+csg63kwsb4o%^qxacsxs#rbj@$_iyo9$3m-2tgog
+      - ALLOWED_HOSTS=localhost,127.0.0.1,0.0.0.0

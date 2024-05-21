@@ -47,7 +47,7 @@
           {% if user.is_authenticated %}
           <div class="links-box">
             <a class="btn btn-outline-primary" href="{% url 'bids:listing' list.listing.id %}">View Listing</a>
-            <a class="btn btn-outline-success" href="{% url 'bids:add_to' list.listing.id %}">Add to WatchList</a>
+            <a class="btn btn-outline-success" href="{% url 'bids:add_to_watchlist' list.listing.id%}">Add to WatchList</a>
             {% if listing.user == user %}
             <a class="btn btn-outline-danger" href="{% url 'bids:close_listing' list.listing.id %}">Close Listing</a>
             {% endif %}
